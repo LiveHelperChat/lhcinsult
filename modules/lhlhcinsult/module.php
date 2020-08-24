@@ -7,7 +7,7 @@ $ViewList = array();
 $ViewList['index'] = array(
     'params' => array(),
     'uparams' => array(),
-    'functions' => array('configure')
+    'functions' => array('list')
 );
 
 $ViewList['options'] = array(
@@ -19,13 +19,14 @@ $ViewList['options'] = array(
 $ViewList['insults'] = array(
     'params' => array(),
     'uparams' => array(),
-    'functions' => array('configure')
+    'functions' => array('list')
 );
 
 $ViewList['delete'] = array(
     'params' => array('id'),
     'uparams' => array('csfr'),
-    'functions' => array()
+    'functions' => array('list')
 );
 
 $FunctionList['configure'] = array('explain' => 'Allow operator to configure Insult module');
+$FunctionList['list'] = array('explain' => 'Allow operator to list insults');
