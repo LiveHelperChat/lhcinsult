@@ -38,6 +38,8 @@ class erLhcoreClassLhcinsultWorker {
             $insultData = self::isInsult($msg->msg, $data, $msg->chat_id, $i);
             if ($insultData['insult'] == true || ($insultData['insult'] === false && $insultData['error'] === false)) {
                 break;
+            } else {
+                sleep(1);
             }
         }
 
