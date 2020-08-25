@@ -34,7 +34,17 @@ class erLhcoreClassLhcinsultWorker {
             return;
         }
 
-        if (self::isInsult($msg->msg, $data, $msg->chat_id)) {
+        for ($i = 1; $i <= 3; $i++) {
+            $insultData = self::isInsult($msg->msg, $data, $msg->chat_id, $i);
+            if ($insultData['insult'] == true || ($insultData['insult'] === false && $insultData['error'] === false)) {
+                break;
+            }
+        }
+
+        if ($insultData['insult'] == true) {
+
+            // Insult API can take long time sometimes we need to be sure we are still connected to DB
+            $db->reconnect();
 
             $presentInsults = erLhcoreClassModelLhcinsult::getCount(['filter' => ['chat_id' => $msg->chat_id]]);
 
@@ -72,7 +82,10 @@ class erLhcoreClassLhcinsultWorker {
             $msg->msg = '';
             $msg->saveThis();
 
-            $chat = erLhcoreClassModelChat::fetch($msg->chat_id);
+            // Update chat in transaction manner
+            $db->beginTransaction();
+
+            $chat = erLhcoreClassModelChat::fetchAndLock($msg->chat_id,false);
 
             $chat->operation_admin .= "lhinst.updateMessageRowAdmin({$msg->chat_id},{$msg->id});";
 
@@ -84,6 +97,8 @@ class erLhcoreClassLhcinsultWorker {
             $chat->operation .= "lhinst.updateMessageRow({$msg->id});";
 
             $chat->updateThis(['update' => ['operation','operation_admin']]);
+
+            $db->commit();
 
             if ($closeChat === true) {
                 // Close chat default way
@@ -97,12 +112,12 @@ class erLhcoreClassLhcinsultWorker {
         }
     }
 
-    public static function isInsult($message, $options, $chatId = 0) {
+    public static function isInsult($message, $options, $chatId = 0, $attempt = 1) {
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $options['host']);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 7);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
@@ -121,19 +136,21 @@ class erLhcoreClassLhcinsultWorker {
 
         if (curl_errno($ch))
         {
-            erLhcoreClassLog::write(
-                'LHC_INSULT_ERROR: ' . $content . curl_error($ch) . $message ,
-                ezcLog::SUCCESS_AUDIT,
-                array(
-                    'source' => 'LHCINSULT',
-                    'category' => 'lhcinsult',
-                    'line' => __LINE__,
-                    'file' => __FILE__,
-                    'object_id' => $chatId
-                )
-            );
+            if ($attempt == 3) {
+                erLhcoreClassLog::write(
+                    'LHC_INSULT_ERROR: ' . $content . curl_error($ch) . $message ,
+                    ezcLog::SUCCESS_AUDIT,
+                    array(
+                        'source' => 'LHCINSULT',
+                        'category' => 'lhcinsult',
+                        'line' => __LINE__,
+                        'file' => __FILE__,
+                        'object_id' => $chatId
+                    )
+                );
+            }
 
-            return false;
+            return ['insult' => false, 'error' => true];
         }
 
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -144,23 +161,26 @@ class erLhcoreClassLhcinsultWorker {
             $responseAttr = erLhcoreClassGenericBotActionRestapi::extractAttribute($contentJSON,$options['attr_loc']);
 
             if ($responseAttr['found'] === true && $responseAttr['value'] == 'Insult') {
-                return true;
+                return ['insult' => true, 'error' => false];
             }
         } else {
-            erLhcoreClassLog::write(
-                'LHC_INSULT_ERROR_HTTP: ' . '[' . $httpcode . ']' .$content . curl_error($ch) ,
-                ezcLog::SUCCESS_AUDIT,
-                array(
-                    'source' => 'LHCINSULT',
-                    'category' => 'lhcinsult',
-                    'line' => __LINE__,
-                    'file' => __FILE__,
-                    'object_id' => $chatId
-                )
-            );
+            if ($attempt == 3) {
+                erLhcoreClassLog::write(
+                    'LHC_INSULT_ERROR_HTTP: ' . '[' . $httpcode . ']' .$content . curl_error($ch) ,
+                    ezcLog::SUCCESS_AUDIT,
+                    array(
+                        'source' => 'LHCINSULT',
+                        'category' => 'lhcinsult',
+                        'line' => __LINE__,
+                        'file' => __FILE__,
+                        'object_id' => $chatId
+                    )
+                );
+            }
+            return ['insult' => false, 'error' => true];
         }
 
-        return false;
+        return ['insult' => false, 'error' => false];
     }
 
 }
