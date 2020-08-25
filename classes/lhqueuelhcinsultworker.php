@@ -18,18 +18,23 @@ class erLhcoreClassLhcinsultWorker {
             return;
         }
 
-        $msg = erLhcoreClassModelmsg::fetch($this->args['id']);
+        $msg = erLhcoreClassModelmsg::fetch($this->args['id'], false);
 
         if (!($msg instanceof erLhcoreClassModelmsg)) {
-            sleep(1);
-            $msg = erLhcoreClassModelmsg::fetch($this->args['id']);
+            sleep(3);
+            $msg = erLhcoreClassModelmsg::fetch($this->args['id'], false);
 
             if (!($msg instanceof erLhcoreClassModelmsg)) {
                 return;
             }
         }
 
-        if (self::isInsult($msg->msg, $data)) {
+        // Bye in deeppavlov is an insult...
+        if (str_replace('.','',mb_strtolower($msg->msg)) == 'bye') {
+            return;
+        }
+
+        if (self::isInsult($msg->msg, $data, $msg->chat_id)) {
 
             $presentInsults = erLhcoreClassModelLhcinsult::getCount(['filter' => ['chat_id' => $msg->chat_id]]);
 
@@ -92,12 +97,12 @@ class erLhcoreClassLhcinsultWorker {
         }
     }
 
-    public static function isInsult($message, $options) {
+    public static function isInsult($message, $options, $chatId = 0) {
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $options['host']);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 2);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
@@ -116,6 +121,18 @@ class erLhcoreClassLhcinsultWorker {
 
         if (curl_errno($ch))
         {
+            erLhcoreClassLog::write(
+                'LHC_INSULT_ERROR: ' . $content . curl_error($ch) ,
+                ezcLog::SUCCESS_AUDIT,
+                array(
+                    'source' => 'LHCINSULT',
+                    'category' => 'lhcinsult',
+                    'line' => __LINE__,
+                    'file' => __FILE__,
+                    'object_id' => $chatId
+                )
+            );
+
             return false;
         }
 
@@ -129,6 +146,18 @@ class erLhcoreClassLhcinsultWorker {
             if ($responseAttr['found'] === true && $responseAttr['value'] == 'Insult') {
                 return true;
             }
+        } else {
+            erLhcoreClassLog::write(
+                'LHC_INSULT_ERROR_HTTP: ' . '[' . $httpcode . ']' .$content . curl_error($ch) ,
+                ezcLog::SUCCESS_AUDIT,
+                array(
+                    'source' => 'LHCINSULT',
+                    'category' => 'lhcinsult',
+                    'line' => __LINE__,
+                    'file' => __FILE__,
+                    'object_id' => $chatId
+                )
+            );
         }
 
         return false;
