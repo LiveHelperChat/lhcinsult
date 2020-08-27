@@ -89,7 +89,8 @@ class erLhcoreClassExtensionLhcinsult
 
         // Remove insult message
         $insultMessage = erLhcoreClassModelLhcinsult::findOne(['filter' => ['msg_id' => $params['msg']->id]]);
-        $insultMessage->removeThis();
+        $insultMessage->not_insult = 1;
+        $insultMessage->updateThis();
 
         erLhcoreClassChatEventDispatcher::getInstance()->dispatch('chat.message_updated', array('msg' => & $params['msg'], 'chat' => & $params['chat']));
 
