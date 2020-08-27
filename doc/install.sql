@@ -3,6 +3,7 @@ CREATE TABLE `lhc_insult` (
   `msg_id` bigint(20) NOT NULL,
   `msg` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `chat_id` bigint(20) NOT NULL,
+  `not_insult` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `chat_id` (`chat_id`),
   KEY `msg_id` (`msg_id`)

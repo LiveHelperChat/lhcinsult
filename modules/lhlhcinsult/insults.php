@@ -2,6 +2,15 @@
 
 $tpl = erLhcoreClassTemplate::getInstance('lhcinsult/insults.tpl.php');
 
+if (isset($Params['user_parameters_unordered']['action']) && in_array($Params['user_parameters_unordered']['action'],['insult','ninsult']) && is_numeric($Params['user_parameters_unordered']['id'])) {
+    $insult = erLhcoreClassModelLhcinsult::fetch($Params['user_parameters_unordered']['id']);
+    $insult->not_insult = $Params['user_parameters_unordered']['action'] == 'insult' ? 0 : 1;
+    $insult->updateThis();
+
+    header('Location: ' . $_SERVER['HTTP_REFERER']);
+    exit;
+}
+
 if (isset($_GET['doSearch'])) {
     $filterParams = erLhcoreClassSearchHandler::getParams(array('customfilterfile' => 'extension/lhcinsult/classes/filter.php','format_filter' => true, 'use_override' => true, 'uparams' => $Params['user_parameters_unordered']));
     $filterParams['is_search'] = true;

@@ -18,7 +18,8 @@ class erLhcoreClassModelLhcinsult
             'id' => $this->id,
         	'chat_id' => $this->chat_id,
         	'msg' => $this->msg,
-        	'msg_id' => $this->msg_id
+        	'msg_id' => $this->msg_id,
+        	'not_insult' => $this->not_insult,
         );
     }
 
@@ -55,6 +56,8 @@ class erLhcoreClassModelLhcinsult
     public $msg = '';
 
     public $msg_id = null;
+
+    public $not_insult = 0;
 }
 
 ?>

@@ -21,10 +21,21 @@ class erLhcoreClassLhcinsultWorker {
         $msg = erLhcoreClassModelmsg::fetch($this->args['id'], false);
 
         if (!($msg instanceof erLhcoreClassModelmsg)) {
-            sleep(3);
+            sleep(4);
             $msg = erLhcoreClassModelmsg::fetch($this->args['id'], false);
 
             if (!($msg instanceof erLhcoreClassModelmsg)) {
+                erLhcoreClassLog::write(
+                    'LHC_INSULT_MSG_NOT_FOUND: ' . $this->args['id'],
+                    ezcLog::SUCCESS_AUDIT,
+                    array(
+                        'source' => 'LHCINSULT',
+                        'category' => 'lhcinsult',
+                        'line' => __LINE__,
+                        'file' => __FILE__,
+                        'object_id' => $this->args['id']
+                    )
+                );
                 return;
             }
         }
@@ -48,7 +59,7 @@ class erLhcoreClassLhcinsultWorker {
             // Insult API can take long time sometimes we need to be sure we are still connected to DB
             $db->reconnect();
 
-            $presentInsults = erLhcoreClassModelLhcinsult::getCount(['filter' => ['chat_id' => $msg->chat_id]]);
+            $presentInsults = erLhcoreClassModelLhcinsult::getCount(['filter' => ['not_insult' => 0, 'chat_id' => $msg->chat_id]]);
 
             $insult = new erLhcoreClassModelLhcinsult();
             $insult->chat_id = $msg->chat_id;
@@ -162,9 +173,25 @@ class erLhcoreClassLhcinsultWorker {
 
             $responseAttr = erLhcoreClassGenericBotActionRestapi::extractAttribute($contentJSON,$options['attr_loc']);
 
-            if ($responseAttr['found'] === true && $responseAttr['value'] == 'Insult') {
-                return ['insult' => true, 'error' => false];
+            if ($responseAttr['found'] === true) {
+                if ($responseAttr['value'] == 'Insult') {
+                    return ['insult' => true, 'error' => false];
+                }
+            } else {
+                erLhcoreClassLog::write(
+                    'LHC_INSULT_JSON_ERR: ' . $content ,
+                    ezcLog::SUCCESS_AUDIT,
+                    array(
+                        'source' => 'LHCINSULT',
+                        'category' => 'lhcinsult',
+                        'line' => __LINE__,
+                        'file' => __FILE__,
+                        'object_id' => $chatId
+                    )
+                );
+                return ['insult' => false, 'error' => true];
             }
+
         } else {
             if ($attempt == 3) {
                 erLhcoreClassLog::write(
