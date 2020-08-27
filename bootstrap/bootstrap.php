@@ -36,7 +36,17 @@ class erLhcoreClassExtensionLhcinsult
     public function messageReceived($params)
     {
         if (class_exists('erLhcoreClassExtensionLhcphpresque') && $params['chat']->status !== erLhcoreClassModelChat::STATUS_BOT_CHAT && $params['msg']->msg != '') {
-            erLhcoreClassModule::getExtensionInstance('erLhcoreClassExtensionLhcphpresque')->enqueue('lhc_insult', 'erLhcoreClassLhcinsultWorker', array('id' => $params['msg']->id));
+            if (!isset($params['file'])) {
+                erLhcoreClassModule::getExtensionInstance('erLhcoreClassExtensionLhcphpresque')->enqueue('lhc_insult', 'erLhcoreClassLhcinsultWorker', array('id' => $params['msg']->id));
+            } else {
+                $lhcinsultOptions = erLhcoreClassModelChatConfig::fetch('lhcinsult_options');
+                if ($lhcinsultOptions instanceof erLhcoreClassModelChatConfig) {
+                    $data = (array)$lhcinsultOptions->data;
+                    if (isset($data['enabled_img']) && $data['enabled_img'] == 1) {
+                        erLhcoreClassLhcinsultWorker::isNudity($params, $data['host_img']);
+                    }
+                }
+            }
         }
     }
 

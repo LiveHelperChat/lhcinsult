@@ -12,6 +12,9 @@ if ( isset($_POST['StoreOptions']) ) {
         'enabled' => new ezcInputFormDefinitionElement(
             ezcInputFormDefinitionElement::OPTIONAL, 'boolean'
         ),
+        'enabled_img' => new ezcInputFormDefinitionElement(
+            ezcInputFormDefinitionElement::OPTIONAL, 'boolean'
+        ),
         'query_attr' => new ezcInputFormDefinitionElement(
             ezcInputFormDefinitionElement::OPTIONAL, 'string'
         ),
@@ -19,6 +22,9 @@ if ( isset($_POST['StoreOptions']) ) {
             ezcInputFormDefinitionElement::OPTIONAL, 'string'
         ),
         'host' => new ezcInputFormDefinitionElement(
+            ezcInputFormDefinitionElement::OPTIONAL, 'string'
+        ),
+        'host_img' => new ezcInputFormDefinitionElement(
             ezcInputFormDefinitionElement::OPTIONAL, 'string'
         )
     );
@@ -30,6 +36,12 @@ if ( isset($_POST['StoreOptions']) ) {
         $data['enabled'] = 1;
     } else {
         $data['enabled'] = 0;
+    }
+
+    if ( $form->hasValidData( 'enabled_img' ) && $form->enabled_img == true ) {
+        $data['enabled_img'] = 1;
+    } else {
+        $data['enabled_img'] = 0;
     }
 
     if ($form->hasValidData( 'query_attr' )) {
@@ -50,6 +62,12 @@ if ( isset($_POST['StoreOptions']) ) {
         $data['host'] = '';
     }
 
+    if ($form->hasValidData( 'host_img' )) {
+        $data['host_img'] = $form->host_img;
+    } else {
+        $data['host_img'] = '';
+    }
+
     $lhciOptions->explain = '';
     $lhciOptions->type = 0;
     $lhciOptions->hidden = 1;
@@ -61,6 +79,7 @@ if ( isset($_POST['StoreOptions']) ) {
 }
 
 $tpl->set('lhci_options',$data);
+$tpl->set('tab','');
 
 $Result['content'] = $tpl->fetch();
 

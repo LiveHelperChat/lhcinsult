@@ -1,10 +1,15 @@
 # Insult detection extensions
 
-This extensions uses https://demo.deeppavlov.ai/#/en/insult AI to detect does visitor messages contains insulting message.
+ * For detecting insulting messages we use. https://demo.deeppavlov.ai/#/en/insult AI to detect does visitor messages contains insulting message. 
+ * For detecting nude uploaded images we use https://github.com/notAI-tech/NudeNet Rest API `docker run -it -p8080:8080 notaitech/nudenet:classifier`
 
 # How it works?
 
-If insult is detected to visitor is written that his message is insultimg. Operator has option to mark this message as not insulting. On third insulting message we terminate the chat.
+## Messages
+If insult is detected to visitor is written that his message is insulting. Operator has option to mark this message as not insulting. On third insulting message we terminate the chat.
+
+## Images
+If we detect nude images we remove file instantly and replace a visitor uploaded file with a simple message telling his uploaded image is inappropriate.
 
 # Requirements
 

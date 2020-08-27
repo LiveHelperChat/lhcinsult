@@ -185,6 +185,73 @@ class erLhcoreClassLhcinsultWorker {
         return ['insult' => false, 'error' => false];
     }
 
+    public static function isNudity($params, $host) {
+
+        // we check only images
+        if (!in_array($params['file']->extension,['jpg','png','bmp','jpeg','gif'])) {
+            return;
+        }
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $host);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 3);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+        $headers = array('Accept: application/json');
+        curl_setopt($ch, CURLOPT_POST,1 );
+
+        curl_setopt($ch, CURLOPT_POSTFIELDS,  json_encode(["webhook"=> null, 'data' => [$params['file']->upload_name => base64_encode(file_get_contents($params['file']->file_path_server))]]));
+        $headers[] = 'Content-Type: application/json';
+        $headers[] = 'Expect:';
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        @curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+
+        $content = curl_exec($ch);
+
+        if (curl_errno($ch))
+        {
+            erLhcoreClassLog::write(
+                'LHC_INSULT_ERROR: ' . $content . curl_error($ch),
+                ezcLog::SUCCESS_AUDIT,
+                array(
+                    'source' => 'LHCINSULT-IMG',
+                    'category' => 'lhcinsult',
+                    'line' => __LINE__,
+                    'file' => __FILE__,
+                    'object_id' => $params['msg']->chat_id
+                )
+            );
+            return;
+        }
+
+        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        if ($httpcode == 200) {
+            $contentJSON = json_decode($content, true);
+            if (isset($contentJSON['prediction'][$params['file']->upload_name]) && isset($contentJSON['success']) && $contentJSON['success'] == true) {
+                if ($contentJSON['prediction'][$params['file']->upload_name]['unsafe'] > 0.75) {
+                    $params['msg']->msg = htmlspecialchars_decode(erTranslationClassLhTranslation::getInstance()->getTranslation('module/lhcinsult', '⚠ This image seems inappropriate and won\'t be delivered. Please upload only relevant images. Thank you.'),ENT_QUOTES);
+                    $params['msg']->updateThis();
+
+                    // Remove file
+                    $params['file']->removeThis();
+
+                    // Store nudity record
+                    $insult = new erLhcoreClassModelLhcinsult();
+                    $insult->chat_id = $params['msg']->chat_id;
+                    $insult->msg = '[nudity]';
+                    $insult->msg_id = $params['msg']->id;
+                    $insult->saveThis();
+                }
+            }
+        }
+
+    }
+
 }
 
 ?>
