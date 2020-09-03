@@ -219,48 +219,11 @@ class erLhcoreClassLhcinsultWorker {
             return;
         }
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $host);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 4);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        for ($i = 1; $i <= 3; $i++) {
+            $insultData = self::isNudeRestAPI($params['file']->upload_name, $params['file']->file_path_server, $params['msg']->chat_id, $host, $i);
+            if ($insultData['scanned'] == true) {
 
-        $headers = array('Accept: application/json');
-        curl_setopt($ch, CURLOPT_POST,1 );
-
-        curl_setopt($ch, CURLOPT_POSTFIELDS,  json_encode(["webhook"=> null, 'data' => [$params['file']->upload_name => base64_encode(file_get_contents($params['file']->file_path_server))]]));
-        $headers[] = 'Content-Type: application/json';
-        $headers[] = 'Expect:';
-
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        @curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-
-        $content = curl_exec($ch);
-
-        if (curl_errno($ch))
-        {
-            erLhcoreClassLog::write(
-                'LHC_INSULT_ERROR: ' . $content . curl_error($ch),
-                ezcLog::SUCCESS_AUDIT,
-                array(
-                    'source' => 'LHCINSULT-IMG',
-                    'category' => 'lhcinsult',
-                    'line' => __LINE__,
-                    'file' => __FILE__,
-                    'object_id' => $params['msg']->chat_id
-                )
-            );
-            return;
-        }
-
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-        if ($httpcode == 200) {
-            $contentJSON = json_decode($content, true);
-            if (isset($contentJSON['prediction'][$params['file']->upload_name]) && isset($contentJSON['success']) && $contentJSON['success'] == true) {
-                if ($contentJSON['prediction'][$params['file']->upload_name]['unsafe'] > 0.75) {
+                if ($insultData['valid'] == false) {
                     $params['msg']->msg = htmlspecialchars_decode(erTranslationClassLhTranslation::getInstance()->getTranslation('module/lhcinsult', '⚠ This image seems inappropriate and won\'t be delivered. Please upload only relevant images. Thank you.'),ENT_QUOTES);
                     $params['msg']->updateThis();
 
@@ -274,11 +237,74 @@ class erLhcoreClassLhcinsultWorker {
                     $insult->msg_id = $params['msg']->id;
                     $insult->saveThis();
                 }
+
+                break;
+            }
+        }
+    }
+
+    public function isNudeRestAPI($fileName, $filePath, $chatId, $host, $attempt = 1) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $host);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 4);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+        $headers = array('Accept: application/json');
+        curl_setopt($ch, CURLOPT_POST,1 );
+
+        curl_setopt($ch, CURLOPT_POSTFIELDS,  json_encode(["webhook"=> null, 'data' => [$fileName => base64_encode(file_get_contents($filePath))]]));
+        $headers[] = 'Content-Type: application/json';
+        $headers[] = 'Expect:';
+
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        @curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+
+        $content = curl_exec($ch);
+
+        if (curl_errno($ch))
+        {
+            // Log only last failed attempt
+            if ($attempt == 3) {
+                erLhcoreClassLog::write(
+                    'LHC_INSULT_ERROR: ' . $content . curl_error($ch),
+                    ezcLog::SUCCESS_AUDIT,
+                    array(
+                        'source' => 'LHCINSULT-IMG',
+                        'category' => 'lhcinsult',
+                        'line' => __LINE__,
+                        'file' => __FILE__,
+                        'object_id' => $chatId
+                    )
+                );
+            }
+
+            // Wait before next attempt
+            sleep(1);
+
+            return ['scanned' => false, 'valid' => true];
+        }
+
+        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        if ($httpcode == 200) {
+            $contentJSON = json_decode($content, true);
+            if (isset($contentJSON['prediction'][$fileName]) && isset($contentJSON['success']) && $contentJSON['success'] == true) {
+                if ($contentJSON['prediction'][$fileName]['safe'] < 0.80) {
+                    return ['scanned' => true, 'valid' => false];
+                } else {
+                    return ['scanned' => true, 'valid' => true];
+                }
             }
         }
 
-    }
+        // Wait one second before next
+        sleep(1);
 
+        return ['scanned' => false, 'valid' => true];
+    }
 }
 
 ?>
