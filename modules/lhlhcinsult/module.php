@@ -18,7 +18,7 @@ $ViewList['options'] = array(
 
 $ViewList['insults'] = array(
     'params' => array(),
-    'uparams' => array('action','id'),
+    'uparams' => array('action','id','terminated','chat_id','timefrom','timefrom_hours','timefrom_minutes','timeto','timeto_hours','timeto_minutes'),
     'functions' => array('list')
 );
 

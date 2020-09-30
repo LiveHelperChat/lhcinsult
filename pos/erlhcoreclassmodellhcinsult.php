@@ -29,6 +29,16 @@ $def->properties['not_insult']->columnName   = 'not_insult';
 $def->properties['not_insult']->propertyName = 'not_insult';
 $def->properties['not_insult']->propertyType = ezcPersistentObjectProperty::PHP_TYPE_INT;
 
+$def->properties['terminated'] = new ezcPersistentObjectProperty();
+$def->properties['terminated']->columnName   = 'terminated';
+$def->properties['terminated']->propertyName = 'terminated';
+$def->properties['terminated']->propertyType = ezcPersistentObjectProperty::PHP_TYPE_INT;
+
+$def->properties['ctime'] = new ezcPersistentObjectProperty();
+$def->properties['ctime']->columnName   = 'ctime';
+$def->properties['ctime']->propertyName = 'ctime';
+$def->properties['ctime']->propertyType = ezcPersistentObjectProperty::PHP_TYPE_INT;
+
 return $def;
 
 ?>

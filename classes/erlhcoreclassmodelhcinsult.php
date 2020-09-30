@@ -20,7 +20,16 @@ class erLhcoreClassModelLhcinsult
         	'msg' => $this->msg,
         	'msg_id' => $this->msg_id,
         	'not_insult' => $this->not_insult,
+        	'terminated' => $this->terminated,
+        	'ctime' => $this->ctime,
         );
+    }
+
+    public function beforeSave()
+    {
+        if ($this->ctime == 0) {
+            $this->ctime = time();
+        }
     }
 
     public function __toString()
@@ -42,6 +51,13 @@ class erLhcoreClassModelLhcinsult
                     $this->chat_nick = $this->chat->nick;
                 }
                 return $this->chat_nick;
+                
+            case 'ctime_front':
+                $this->ctime_front = '';
+                if ($this->ctime > 0) {
+                    $this->ctime_front = date('Ymd') == date('Ymd', $this->ctime) ? date(erLhcoreClassModule::$dateHourFormat, $this->ctime) : date(erLhcoreClassModule::$dateFormat, $this->ctime);
+                }
+                return $this->ctime_front;
 
             default:
                 ;
@@ -58,6 +74,10 @@ class erLhcoreClassModelLhcinsult
     public $msg_id = null;
 
     public $not_insult = 0;
+
+    public $terminated = 0;
+
+    public $ctime = 0;
 }
 
 ?>

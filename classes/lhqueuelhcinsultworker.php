@@ -65,7 +65,6 @@ class erLhcoreClassLhcinsultWorker {
             $insult->chat_id = $msg->chat_id;
             $insult->msg = $msg->msg;
             $insult->msg_id = $msg->id;
-            $insult->saveThis();
 
             $closeChat = false;
             $appendOpMessage = '';
@@ -78,7 +77,12 @@ class erLhcoreClassLhcinsultWorker {
                 $closeChat = true;
                 $appendOpMessage = ' Chat terminated due to repeated insults.';
                 $msgText = "[b]⛔ This chat has been terminated.[/b]\nOur system has detected potentially offensive language.\n\nYou must not use any language that could be considered offensive, racist, obscene or otherwise inappropriate while using our Live Chat service.\nWe appreciate your understanding.";
+
+                // Store flag that chat was terminated
+                $insult->terminated = 1;
             }
+
+            $insult->saveThis();
 
             $msg->meta_msg = json_encode([
                 'content' => [
