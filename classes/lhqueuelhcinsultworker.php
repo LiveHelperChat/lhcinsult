@@ -40,9 +40,18 @@ class erLhcoreClassLhcinsultWorker {
             }
         }
 
-        // Bye in deeppavlov is an insult...
-        if (str_replace('.','',mb_strtolower($msg->msg)) == 'bye') {
-            return;
+        if (isset($data['safe_comb']) && trim($data['safe_comb']) != '') {
+            $rulesCheck = explode("\n",trim(str_replace(array("\r\n"),"\n",$data['safe_comb'])));
+            foreach ($rulesCheck as $ruleCheck) {
+                $presenceOutcome = erLhcoreClassGenericBotWorkflow::checkPresenceMessage(array(
+                    'pattern' => $ruleCheck,
+                    'msg' => mb_strtolower($msg->msg),
+                ));
+                // check is it safe combination
+                if ($presenceOutcome['found']) {
+                    return;
+                }
+            }
         }
 
         for ($i = 1; $i <= 3; $i++) {

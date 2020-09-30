@@ -26,6 +26,9 @@ if ( isset($_POST['StoreOptions']) ) {
         ),
         'host_img' => new ezcInputFormDefinitionElement(
             ezcInputFormDefinitionElement::OPTIONAL, 'string'
+        ),
+        'safe_comb' => new ezcInputFormDefinitionElement(
+            ezcInputFormDefinitionElement::OPTIONAL, 'unsafe_raw'
         )
     );
 
@@ -48,6 +51,12 @@ if ( isset($_POST['StoreOptions']) ) {
         $data['query_attr'] = $form->query_attr;
     } else {
         $data['query_attr'] = 'x';
+    }
+
+    if ($form->hasValidData( 'safe_comb' )) {
+        $data['safe_comb'] = $form->safe_comb;
+    } else {
+        $data['safe_comb'] = '';
     }
 
     if ($form->hasValidData( 'attr_loc' )) {

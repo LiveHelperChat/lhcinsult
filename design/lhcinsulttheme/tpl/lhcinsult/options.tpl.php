@@ -33,6 +33,12 @@
                 <label>Host</label>
                 <input type="text" class="form-control form-control-sm" name="host" value="<?php isset($lhci_options['host']) ? print htmlspecialchars($lhci_options['host']) : print 'http://localhost:5000/model'?>" />
             </div>
+
+            <div class="form-group">
+                <label>Declare rules for messages matching which is considered not an insults.</label>
+                <textarea name="safe_comb" rows="5" placeholder="delete,close && my && account [params max_words=5]&#10;new rule in new line" class="form-control form-control-sm"><?php isset($lhci_options['safe_comb']) ? print htmlspecialchars($lhci_options['safe_comb']) : ''?></textarea>
+            </div>
+
         </div>
         <div role="tabpanel" class="tab-pane <?php if ($tab == 'images') : ?>active<?php endif;?>" id="images">
 
