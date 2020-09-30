@@ -82,6 +82,7 @@ class erLhcoreClassLhcinsultWorker {
                 $insult->terminated = 1;
             }
 
+            $insult->ctime = time();
             $insult->saveThis();
 
             $msg->meta_msg = json_encode([
@@ -239,6 +240,7 @@ class erLhcoreClassLhcinsultWorker {
                     $insult->chat_id = $params['msg']->chat_id;
                     $insult->msg = '[nudity]';
                     $insult->msg_id = $params['msg']->id;
+                    $insult->ctime = time();
                     $insult->saveThis();
                 }
 

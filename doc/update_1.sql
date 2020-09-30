@@ -10,3 +10,8 @@ ADD INDEX `ctime` (`ctime`);
 UPDATE `lhc_insult`
 INNER JOIN `lh_msg` ON `lhc_insult`.`msg_id` = `lh_msg`.`id`
 SET `lhc_insult`.`ctime` = `lh_msg`.`time`;
+
+UPDATE `lhc_insult`
+INNER JOIN `lh_msg` ON `lhc_insult`.`msg_id` = `lh_msg`.`id`
+SET `lhc_insult`.`terminated` = 1
+WHERE `lh_msg`.`meta_msg` LIKE ('%This chat has been terminated%');

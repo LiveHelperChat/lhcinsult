@@ -25,13 +25,6 @@ class erLhcoreClassModelLhcinsult
         );
     }
 
-    public function beforeSave()
-    {
-        if ($this->ctime == 0) {
-            $this->ctime = time();
-        }
-    }
-
     public function __toString()
     {
     	return $this->msg;
