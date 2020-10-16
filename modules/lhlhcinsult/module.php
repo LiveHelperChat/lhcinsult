@@ -28,5 +28,11 @@ $ViewList['delete'] = array(
     'functions' => array('list')
 );
 
+$ViewList['markasinsult'] = array(
+    'params' => array('id'),
+    'functions' => array('use')
+);
+
 $FunctionList['configure'] = array('explain' => 'Allow operator to configure Insult module');
 $FunctionList['list'] = array('explain' => 'Allow operator to list insults');
+$FunctionList['use'] = array('explain' => 'Allow operator to mark messages as insults');

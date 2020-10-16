@@ -1,0 +1,1 @@
+<script src="<?php echo erLhcoreClassDesign::designJS('js/lhcinsult.lhc.js');?>"></script>

@@ -65,77 +65,82 @@ class erLhcoreClassLhcinsultWorker {
 
         if ($insultData['insult'] == true) {
 
-            // Insult API can take long time sometimes we need to be sure we are still connected to DB
-            $db->reconnect();
-
-            $presentInsults = erLhcoreClassModelLhcinsult::getCount(['filter' => ['not_insult' => 0, 'chat_id' => $msg->chat_id]]);
-
-            $insult = new erLhcoreClassModelLhcinsult();
-            $insult->chat_id = $msg->chat_id;
-            $insult->msg = $msg->msg;
-            $insult->msg_id = $msg->id;
-
-            $closeChat = false;
-            $appendOpMessage = '';
-
-            if ($presentInsults == 0) {
-                $msgText = "Message not sent.\n Our system has detected potentially offensive language. Please rephrase your query and try again.";
-            } elseif ($presentInsults == 1) {
-                $msgText = "Message not sent.\n Our system has detected potentially offensive language. Please rephrase your query and try again.\n[b]⚠ This chat will be terminated at the next occurrence.[/b]";
-            } elseif ($presentInsults >= 2) {
-                $closeChat = true;
-                $appendOpMessage = ' Chat terminated due to repeated insults.';
-                $msgText = "[b]⛔ This chat has been terminated.[/b]\nOur system has detected potentially offensive language.\n\nYou must not use any language that could be considered offensive, racist, obscene or otherwise inappropriate while using our Live Chat service.\nWe appreciate your understanding.";
-
-                // Store flag that chat was terminated
-                $insult->terminated = 1;
-            }
-
-            $insult->ctime = time();
-            $insult->saveThis();
-
-            $msg->meta_msg = json_encode([
-                'content' => [
-                    'text_conditional' => [
-                        'intro_us' => $msgText,
-                        'full_us' => '',
-                        'readmore_us' => '',
-                        'intro_op' => 'This message is insulting.' . $appendOpMessage,
-                        'full_op' => $msg->msg . ' [button_action=not_insult]Not offensive[/button_action]',
-                        'readmore_op' => 'See a message',
-                    ]
-                ]
-            ]);
-            $msg->msg = '';
-            $msg->saveThis();
-
-            // Update chat in transaction manner
-            $db->beginTransaction();
-
-            $chat = erLhcoreClassModelChat::fetchAndLock($msg->chat_id,false);
-
-            $chat->operation_admin .= "lhinst.updateMessageRowAdmin({$msg->chat_id},{$msg->id});";
-
-            // Update main chat interface if chat is closed.
-            if ($closeChat == true) {
-                $chat->operation_admin .= "lhinst.updateVoteStatus(" . $msg->chat_id . ");";
-            }
-
-            $chat->operation .= "lhinst.updateMessageRow({$msg->id});";
-
-            $chat->updateThis(['update' => ['operation','operation_admin']]);
-
-            $db->commit();
-
-            if ($closeChat === true) {
-                // Close chat default way
-                erLhcoreClassChatHelper::closeChat(array(
-                    'chat' => & $chat,
-                    'bot' => true
-                ));
-            }
+            self::markAsInsult($msg);
 
             erLhcoreClassChatEventDispatcher::getInstance()->dispatch('chat.message_updated', array('msg' => & $msg, 'chat' => & $chat));
+        }
+    }
+
+    public static function markAsInsult($msg) {
+
+        $db = ezcDbInstance::get();
+        $db->reconnect();
+
+        $presentInsults = erLhcoreClassModelLhcinsult::getCount(['filter' => ['not_insult' => 0, 'chat_id' => $msg->chat_id]]);
+
+        $insult = new erLhcoreClassModelLhcinsult();
+        $insult->chat_id = $msg->chat_id;
+        $insult->msg = $msg->msg;
+        $insult->msg_id = $msg->id;
+
+        $closeChat = false;
+        $appendOpMessage = '';
+
+        if ($presentInsults == 0) {
+            $msgText = "Message not sent.\n Our system has detected potentially offensive language. Please rephrase your query and try again.";
+        } elseif ($presentInsults == 1) {
+            $msgText = "Message not sent.\n Our system has detected potentially offensive language. Please rephrase your query and try again.\n[b]⚠ This chat will be terminated at the next occurrence.[/b]";
+        } elseif ($presentInsults >= 2) {
+            $closeChat = true;
+            $appendOpMessage = ' Chat terminated due to repeated insults.';
+            $msgText = "[b]⛔ This chat has been terminated.[/b]\nOur system has detected potentially offensive language.\n\nYou must not use any language that could be considered offensive, racist, obscene or otherwise inappropriate while using our Live Chat service.\nWe appreciate your understanding.";
+
+            // Store flag that chat was terminated
+            $insult->terminated = 1;
+        }
+
+        $insult->ctime = time();
+        $insult->saveThis();
+
+        $msg->meta_msg = json_encode([
+            'content' => [
+                'text_conditional' => [
+                    'intro_us' => $msgText,
+                    'full_us' => '',
+                    'readmore_us' => '',
+                    'intro_op' => 'This message is insulting.' . $appendOpMessage,
+                    'full_op' => $msg->msg . ' [button_action=not_insult]Not offensive[/button_action]',
+                    'readmore_op' => 'See a message',
+                ]
+            ]
+        ]);
+        $msg->msg = '';
+        $msg->saveThis();
+
+        // Update chat in transaction manner
+        $db->beginTransaction();
+
+        $chat = erLhcoreClassModelChat::fetchAndLock($msg->chat_id, false);
+
+        $chat->operation_admin .= "lhinst.updateMessageRowAdmin({$msg->chat_id},{$msg->id});";
+
+        // Update main chat interface if chat is closed.
+        if ($closeChat == true) {
+            $chat->operation_admin .= "lhinst.updateVoteStatus(" . $msg->chat_id . ");";
+        }
+
+        $chat->operation .= "lhinst.updateMessageRow({$msg->id});";
+
+        $chat->updateThis(['update' => ['operation','operation_admin']]);
+
+        $db->commit();
+
+        if ($closeChat === true) {
+            // Close chat default way
+            erLhcoreClassChatHelper::closeChat(array(
+                'chat' => & $chat,
+                'bot' => true
+            ));
         }
     }
 
