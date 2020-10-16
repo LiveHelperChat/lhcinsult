@@ -61,13 +61,6 @@ class erLhcoreClassExtensionLhcinsult
 
     public function notInsult($params) {
 
-        // If chat is closed just ignore a button.
-        if ($params['chat']->status == erLhcoreClassModelChat::STATUS_CLOSED_CHAT) {
-            return array(
-                'status' => erLhcoreClassChatEventDispatcher::STOP_WORKFLOW
-            );
-        }
-
         // Restore original message
         if (isset($params['msg']->meta_msg_array['content']['text_conditional']['full_op'])) {
             $params['msg']->msg = preg_replace('/\[button_action=not_insult\](.*?)\[\/button_action\]/is','', $params['msg']->meta_msg_array['content']['text_conditional']['full_op']);
