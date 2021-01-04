@@ -14,8 +14,13 @@ class erLhcoreClassLhcinsultWorker {
         $lhcinsultOptions = erLhcoreClassChat::getSession()->load( 'erLhcoreClassModelChatConfig', 'lhcinsult_options' );
         $data = (array)$lhcinsultOptions->data;
 
-        if (!isset($data['enabled']) || $data['enabled'] == 0) {
+        if (!isset($data['enabled']) || $data['enabled'] == 0 || (isset($data['disable_in_msg']) && $data['disable_in_msg'] == 1)) {
             return;
+        }
+
+        // If queue longer than 10 messages something not right. So just cleanup a queue
+        if (erLhcoreClassRedis::instance()->llen('resque:queue:lhc_insult') > 10) {
+            erLhcoreClassRedis::instance()->del('resque:queue:lhc_insult');
         }
 
         $msg = erLhcoreClassModelmsg::fetch($this->args['id'], false);
@@ -166,6 +171,8 @@ class erLhcoreClassLhcinsultWorker {
 
         $content = curl_exec($ch);
 
+        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
         if (curl_errno($ch))
         {
             if ($attempt == 3) {
@@ -182,10 +189,8 @@ class erLhcoreClassLhcinsultWorker {
                 );
             }
 
-            return ['insult' => false, 'error' => true];
+            return ['insult' => false, 'error' => true, 'output' => 'curl_errno - [' . $httpcode . ']' . $content . curl_error($ch)];
         }
-
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         if ($httpcode == 200) {
             $contentJSON = json_decode($content, true);
@@ -208,7 +213,7 @@ class erLhcoreClassLhcinsultWorker {
                         'object_id' => $chatId
                     )
                 );
-                return ['insult' => false, 'error' => true];
+                return ['insult' => false, 'error' => true, 'output' => 'attr not found - [' . $httpcode . ']' . $content . curl_error($ch)];
             }
 
         } else {
@@ -225,7 +230,7 @@ class erLhcoreClassLhcinsultWorker {
                     )
                 );
             }
-            return ['insult' => false, 'error' => true];
+            return ['insult' => false, 'error' => true, 'output' => '[' . $httpcode . ']' .$content . curl_error($ch)];
         }
 
         return ['insult' => false, 'error' => false];
@@ -263,7 +268,7 @@ class erLhcoreClassLhcinsultWorker {
         }
     }
 
-    public function isNudeRestAPI($fileName, $filePath, $chatId, $host, $attempt = 1) {
+    public static function isNudeRestAPI($fileName, $filePath, $chatId, $host, $attempt = 1) {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $host);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -283,6 +288,8 @@ class erLhcoreClassLhcinsultWorker {
         @curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 
         $content = curl_exec($ch);
+
+        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         if (curl_errno($ch))
         {
@@ -304,10 +311,8 @@ class erLhcoreClassLhcinsultWorker {
             // Wait before next attempt
             sleep(1);
 
-            return ['scanned' => false, 'valid' => true];
+            return ['scanned' => false, 'valid' => true, 'output' => 'curl_errno - [' . $httpcode . ']' . $content . curl_error($ch)];
         }
-
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         if ($httpcode == 200) {
             $contentJSON = json_decode($content, true);
@@ -323,7 +328,7 @@ class erLhcoreClassLhcinsultWorker {
         // Wait one second before next
         sleep(1);
 
-        return ['scanned' => false, 'valid' => true];
+        return ['scanned' => false, 'valid' => true, 'output' => 'curl_errno - [' . $httpcode . ']' . $content . curl_error($ch)];
     }
 }
 

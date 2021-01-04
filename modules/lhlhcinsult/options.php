@@ -15,6 +15,15 @@ if ( isset($_POST['StoreOptions']) ) {
         'enabled_img' => new ezcInputFormDefinitionElement(
             ezcInputFormDefinitionElement::OPTIONAL, 'boolean'
         ),
+        'auto_enable' => new ezcInputFormDefinitionElement(
+            ezcInputFormDefinitionElement::OPTIONAL, 'boolean'
+        ),
+        'disable_in_msg' => new ezcInputFormDefinitionElement(
+            ezcInputFormDefinitionElement::OPTIONAL, 'boolean'
+        ),
+        'disable_in_img' => new ezcInputFormDefinitionElement(
+            ezcInputFormDefinitionElement::OPTIONAL, 'boolean'
+        ),
         'query_attr' => new ezcInputFormDefinitionElement(
             ezcInputFormDefinitionElement::OPTIONAL, 'string'
         ),
@@ -28,6 +37,9 @@ if ( isset($_POST['StoreOptions']) ) {
             ezcInputFormDefinitionElement::OPTIONAL, 'string'
         ),
         'safe_comb' => new ezcInputFormDefinitionElement(
+            ezcInputFormDefinitionElement::OPTIONAL, 'unsafe_raw'
+        ),
+        'report_email_in' => new ezcInputFormDefinitionElement(
             ezcInputFormDefinitionElement::OPTIONAL, 'unsafe_raw'
         )
     );
@@ -75,6 +87,31 @@ if ( isset($_POST['StoreOptions']) ) {
         $data['host_img'] = $form->host_img;
     } else {
         $data['host_img'] = '';
+    }
+
+    // Failover settings
+    if ( $form->hasValidData( 'auto_enable' ) && $form->auto_enable == true ) {
+        $data['auto_enable'] = 1;
+    } else {
+        $data['auto_enable'] = 0;
+    }
+
+    if ( $form->hasValidData( 'disable_in_msg' ) && $form->disable_in_msg == true ) {
+        $data['disable_in_msg'] = 1;
+    } else {
+        $data['disable_in_msg'] = 0;
+    }
+
+    if ( $form->hasValidData( 'disable_in_img' ) && $form->disable_in_img == true ) {
+        $data['disable_in_img'] = 1;
+    } else {
+        $data['disable_in_img'] = 0;
+    }
+
+    if ( $form->hasValidData( 'report_email_in' )) {
+        $data['report_email_in'] = $form->report_email_in ;
+    } else {
+        $data['report_email_in'] = '';
     }
 
     $lhciOptions->explain = '';

@@ -21,12 +21,12 @@
 
             <div class="form-group">
                 <label>Query attribute</label>
-                <input type="text" class="form-control form-control-sm" name="query_attr" value="<?php isset($lhci_options['query_attr']) ? print htmlspecialchars($lhci_options['query_attr']) : print 'x'?>" />
+                <input type="text" class="form-control form-control-sm" placeholder="x" name="query_attr" value="<?php isset($lhci_options['query_attr']) ? print htmlspecialchars($lhci_options['query_attr']) : print 'x'?>" />
             </div>
 
             <div class="form-group">
                 <label>Attribute location</label>
-                <input type="text" class="form-control form-control-sm" name="attr_loc" value="<?php isset($lhci_options['attr_loc']) ? print htmlspecialchars($lhci_options['attr_loc']) : print '0:0:5'?>" />
+                <input type="text" class="form-control form-control-sm" placeholder="0:0" name="attr_loc" value="<?php isset($lhci_options['attr_loc']) ? print htmlspecialchars($lhci_options['attr_loc']) : print '0:0'?>" />
             </div>
 
             <div class="form-group">
@@ -56,6 +56,34 @@
         </div>
     </div>
 
+    <hr/>
+
+    <h4><?php echo erTranslationClassLhTranslation::getInstance()->getTranslation('module/cbscheduler','Failover');?></h4>
+
+    <div class="form-group">
+        <label><input type="checkbox" value="on" name="auto_enable" <?php isset($lhci_options['auto_enable']) && ($lhci_options['auto_enable'] == true) ? print 'checked="checked"' : ''?> /> <?php echo erTranslationClassLhTranslation::getInstance()->getTranslation('module/cbscheduler','Enable services automatically.');?></label><br/>
+    </div>
+
+    <div class="form-group">
+        <label><input type="checkbox" value="on" name="disable_in_msg" <?php isset($lhci_options['disable_in_msg']) && ($lhci_options['disable_in_msg'] == true) ? print 'checked="checked"' : ''?> /> <?php echo erTranslationClassLhTranslation::getInstance()->getTranslation('module/cbscheduler','Disable messages detection. Systems set this automatically if cronjob detects that service is down for whatever reason.');?></label><br/>
+    </div>
+
+    <div class="form-group">
+        <label><input type="checkbox" value="on" name="disable_in_img" <?php isset($lhci_options['disable_in_img']) && ($lhci_options['disable_in_img'] == true) ? print 'checked="checked"' : ''?> /> <?php echo erTranslationClassLhTranslation::getInstance()->getTranslation('module/cbscheduler','Disable images detection. Systems set this automatically if cronjob detects that service is down for whatever reason.');?></label><br/>
+    </div>
+
+    <div class="form-group">
+        <label><?php echo erTranslationClassLhTranslation::getInstance()->getTranslation('module/cbscheduler','Report about unavailable services to these e-mails. Separated by comma');?></label>
+        <input type="text" class="form-control" name="report_email_in" value="<?php isset($lhci_options['report_email_in']) ? print htmlspecialchars($lhci_options['report_email_in']) : ''?>" />
+    </div>
+
+    <?php if (isset($lhci_options['fail_reason']) && !empty($lhci_options['fail_reason'])) : ?>
+        <p><?php echo htmlspecialchars($lhci_options['fail_reason'])?></p>
+    <?php endif; ?>
+
     <input type="submit" class="btn btn-secondary" name="StoreOptions" value="<?php echo erTranslationClassLhTranslation::getInstance()->getTranslation('system/buttons','Save'); ?>" />
+
+
+
 
 </form>

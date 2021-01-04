@@ -42,7 +42,7 @@ class erLhcoreClassExtensionLhcinsult
                 $lhcinsultOptions = erLhcoreClassModelChatConfig::fetch('lhcinsult_options');
                 if ($lhcinsultOptions instanceof erLhcoreClassModelChatConfig) {
                     $data = (array)$lhcinsultOptions->data;
-                    if (isset($data['enabled_img']) && $data['enabled_img'] == 1) {
+                    if (isset($data['enabled_img']) && $data['enabled_img'] == 1 && (!isset($data['disable_in_img']) || $data['disable_in_img'] == false)) {
                         erLhcoreClassLhcinsultWorker::isNudity($params, $data['host_img']);
                     }
                 }

@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  lhcinsul-image:
+    container_name: lhcinsul-image
+    image: notaitech/nudenet:classifier
+    ports:
+      - "8087:8080"
+    networks:
+      - code-network
+    restart: always
+  lhcinsul-msg:
+    container_name: lhcinsul-msg
+    image: deeppavlov/base-cpu
+    environment:
+      - CONFIG=insults_kaggle_conv_bert
+    volumes:
+      - ./dp-components:/root/.deeppavlov
+      - ./dp-env:/venv
+    ports:
+      - "5000:5000"
+    networks:
+      - code-network
+    restart: always
+networks:
+  code-network:
+    driver: bridge
