@@ -31,6 +31,8 @@ if (isset($dataOptions['enabled']) && $dataOptions['enabled'] == true) {
                 $mail->Send();
             }
 
+            $dataOptions['fail_reason'] = print_r($response,true);
+
             // Update Options
             $lhciOptions->explain = '';
             $lhciOptions->type = 0;
@@ -76,6 +78,7 @@ if (isset($dataOptions['enabled']) && $dataOptions['enabled'] == true) {
                 $lhciOptions->identifier = 'lhcinsult_options';
                 $lhciOptions->value = serialize($dataOptions);
                 $lhciOptions->saveThis();
+
                 echo "Message service - ENABLED\n";
             } else {
                 echo "Message service - OK, but not auto enabled\n";
@@ -121,6 +124,9 @@ if (isset($dataOptions['enabled_img']) && $dataOptions['enabled_img'] == true) {
             $lhciOptions->identifier = 'lhcinsult_options';
             $lhciOptions->value = serialize($dataOptions);
             $lhciOptions->saveThis();
+
+            $dataOptions['fail_reason'] = print_r($response,true);
+            
             echo "IMG service - DISABLED\n";
         } else {
             echo "IMG service - OK\n";
