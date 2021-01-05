@@ -21,6 +21,7 @@ This extension requires
 
 # Install guide
 
+* Execute SQL https://github.com/LiveHelperChat/lhcinsult/blob/master/doc/install.sql
 * Run docker from `extension/lhcinsult/doc/docker` directory. First time starting service can take some time.
   * `docker-compose -f docker-compose.yml up` - to see how it starts
   * `docker-compose -f docker-compose.yml up -d` - to run as a service
