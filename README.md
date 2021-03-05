@@ -54,7 +54,7 @@ This command monitors services health and disables them if required. This comman
 
 ## How to monitor service status and restart on failure
 
-Over time I have noticed that time from time docker image just hangs up. And image is not restarted by docker service. Here is a small shell script which monitors status and restarts if required
+Over time I have noticed that time from time docker image just hangs up. And image is not restarted by docker service. Here is a small shell script which monitors status and restarts if required. This script should be run every 5 minutes or so.
 
 ```shell
 #!/bin/bash
