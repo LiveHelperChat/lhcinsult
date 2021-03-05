@@ -62,8 +62,8 @@ Over time I have noticed that time from time docker image just hangs up. And ima
 fileCron='/data/lhc-chatbot/script/image-dead'
 imageTest='/data/lhc-chatbot/script/logo.png'
 
-test=$( base64 -w 0 logo.png )
-data="{\"data\":{\"$imageTest\":\"$test\"},\"webhook\":null}"
+test=$( base64 -w 0 $imageTest )
+data="{\"data\":{\"logo.png\":\"$test\"},\"webhook\":null}"
 RESPONSE=$(curl -X POST -d "$data" -H 'Accept: application/json' -H 'Content-Type: application/json' --max-time 180 -s http://localhost:8080/sync)
 
 if [[ $RESPONSE != *"unsafe"* ]]; then
@@ -79,6 +79,7 @@ else
   if [ -f $fileCron ]; then
     rm -f $fileCron
   fi
+  echo "Live API"
 fi
 ```
 
