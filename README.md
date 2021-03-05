@@ -83,4 +83,8 @@ else
 fi
 ```
 
+Cronjob command
+```
+*/5 * * * * /data/lhc-chatbot/script/monitor-image-insult.sh > /data/lhc-chatbot/script/log_insult.txt /dev/null 2>&1
+```
 
