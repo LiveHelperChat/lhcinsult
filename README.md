@@ -52,5 +52,34 @@ This command monitors services health and disables them if required. This comman
 /usr/bin/php cron.php -s site_admin -e lhcinsult -c cron/check_health
 ```
 
+## How to monitor service status and restart on failure
+
+Over time I have noticed that time from time docker image just hangs up. And image is not restarted by docker service. Here is a small shell script which monitors status and restarts if required
+
+```shell
+#!/bin/bash
+
+fileCron='/data/lhc-chatbot/script/image-dead'
+imageTest='/data/lhc-chatbot/script/logo.png'
+
+test=$( base64 -w 0 logo.png )
+data="{\"data\":{\"$imageTest\":\"$test\"},\"webhook\":null}"
+RESPONSE=$(curl -X POST -d "$data" -H 'Accept: application/json' -H 'Content-Type: application/json' --max-time 180 -s http://localhost:8080/sync)
+
+if [[ $RESPONSE != *"unsafe"* ]]; then
+   if [ ! -f $fileCron ];
+    then
+      echo "Creating lock file"
+      touch $fileCron
+    else
+      /usr/bin/docker restart lhcinsul-image
+      echo "Lock found. Restarting API"
+    fi
+else
+  if [ -f $fileCron ]; then
+    rm -f $fileCron
+  fi
+fi
+```
 
 
