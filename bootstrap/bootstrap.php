@@ -61,13 +61,23 @@ class erLhcoreClassExtensionLhcinsult
 
     public function notInsult($params) {
 
-        // Restore original message
-        if (isset($params['msg']->meta_msg_array['content']['text_conditional']['full_op'])) {
-            $params['msg']->msg = preg_replace('/\[button_action=not_insult\](.*?)\[\/button_action\]/is','', $params['msg']->meta_msg_array['content']['text_conditional']['full_op']);
-        }
+        if ($params['msg']->msg == '' && $params['msg']->meta_msg != '') {
+            // Restore original message
+            if (isset($params['msg']->meta_msg_array['content']['text_conditional']['full_op'])) {
+                $params['msg']->msg = preg_replace('/\[button_action=not_insult\](.*?)\[\/button_action\]/is','', $params['msg']->meta_msg_array['content']['text_conditional']['full_op']);
+            }
 
-        $params['msg']->meta_msg = '';
-        $params['msg']->updateThis(['update' => ['msg','meta_msg']]);
+            $params['msg']->meta_msg = '';
+            $params['msg']->updateThis(['update' => ['msg','meta_msg']]);
+
+            // Remove insult message
+            $insultMessage = erLhcoreClassModelLhcinsult::findOne(['filter' => ['not_insult' => 0, 'msg_id' => $params['msg']->id]]);
+
+            if ($insultMessage instanceof erLhcoreClassModelLhcinsult) {
+                $insultMessage->not_insult = 1;
+                $insultMessage->updateThis(['update' => ['not_insult']]);
+            }
+        }
 
         // This we need for frontend visitor to update UI
         $params['chat']->operation .= "lhinst.updateMessageRow({$params['msg']->id});\n";
@@ -79,11 +89,6 @@ class erLhcoreClassExtensionLhcinsult
             $params['msg']->getState()
         ) );
         $tpl->set ( 'chat', $params['chat'] );
-
-        // Remove insult message
-        $insultMessage = erLhcoreClassModelLhcinsult::findOne(['filter' => ['msg_id' => $params['msg']->id]]);
-        $insultMessage->not_insult = 1;
-        $insultMessage->updateThis();
 
         erLhcoreClassChatEventDispatcher::getInstance()->dispatch('chat.message_updated', array('msg' => & $params['msg'], 'chat' => & $params['chat']));
 

@@ -59,6 +59,10 @@ class erLhcoreClassLhcinsultWorker {
             }
         }
 
+        if ($msg->msg == '') {
+            return;
+        }
+
         for ($i = 1; $i <= 3; $i++) {
             $insultData = self::isInsult($msg->msg, $data, $msg->chat_id, $i);
             if ($insultData['insult'] == true || ($insultData['insult'] === false && $insultData['error'] === false)) {
@@ -69,10 +73,7 @@ class erLhcoreClassLhcinsultWorker {
         }
 
         if ($insultData['insult'] == true) {
-
             self::markAsInsult($msg);
-
-            erLhcoreClassChatEventDispatcher::getInstance()->dispatch('chat.message_updated', array('msg' => & $msg, 'chat' => & $chat));
         }
     }
 
@@ -80,6 +81,17 @@ class erLhcoreClassLhcinsultWorker {
 
         $db = ezcDbInstance::get();
         $db->reconnect();
+
+        $db->beginTransaction();
+
+        $msg->syncAndLock();
+
+        // Perhaps operator updated a message
+        // While we were making request to Rest API service
+        if ($msg->msg == '') {
+            $db->rollback();
+            return;
+        }
 
         $presentInsults = erLhcoreClassModelLhcinsult::getCount(['filter' => ['not_insult' => 0, 'chat_id' => $msg->chat_id]]);
 
@@ -122,6 +134,8 @@ class erLhcoreClassLhcinsultWorker {
         $msg->msg = '';
         $msg->saveThis();
 
+        $db->commit();
+
         // Update chat in transaction manner
         $db->beginTransaction();
 
@@ -147,6 +161,8 @@ class erLhcoreClassLhcinsultWorker {
                 'bot' => true
             ));
         }
+
+        erLhcoreClassChatEventDispatcher::getInstance()->dispatch('chat.message_updated', array('msg' => & $msg, 'chat' => & $chat));
     }
 
     public static function isInsult($message, $options, $chatId = 0, $attempt = 1) {
