@@ -21,6 +21,7 @@ This extension requires
 
 # Install guide
 
+* Execute SQL https://github.com/LiveHelperChat/lhcinsult/blob/master/doc/install.sql
 * Run docker from `extension/lhcinsult/doc/docker` directory. First time starting service can take some time.
   * `docker-compose -f docker-compose.yml up` - to see how it starts
   * `docker-compose -f docker-compose.yml up -d` - to run as a service
@@ -51,5 +52,39 @@ This command monitors services health and disables them if required. This comman
 /usr/bin/php cron.php -s site_admin -e lhcinsult -c cron/check_health
 ```
 
+## How to monitor service status and restart on failure
 
+Over time I have noticed that time from time docker image just hangs up. And image is not restarted by docker service. Here is a small shell script which monitors status and restarts if required. This script should be run every 5 minutes or so.
+
+```shell
+#!/bin/bash
+
+fileCron='/data/lhc-chatbot/script/image-dead'
+imageTest='/data/lhc-chatbot/script/logo.png'
+
+test=$( base64 -w 0 $imageTest )
+data="{\"data\":{\"logo.png\":\"$test\"},\"webhook\":null}"
+RESPONSE=$(curl -X POST -d "$data" -H 'Accept: application/json' -H 'Content-Type: application/json' --max-time 180 -s http://localhost:8080/sync)
+
+if [[ $RESPONSE != *"unsafe"* ]]; then
+   if [ ! -f $fileCron ];
+    then
+      echo "Creating lock file"
+      touch $fileCron
+    else
+      /usr/bin/docker restart lhcinsul-image
+      echo "Lock found. Restarting API"
+    fi
+else
+  if [ -f $fileCron ]; then
+    rm -f $fileCron
+  fi
+  echo "Live API"
+fi
+```
+
+Cronjob command
+```
+*/5 * * * * /data/lhc-chatbot/script/monitor-image-insult.sh > /data/lhc-chatbot/script/log_insult.txt /dev/null 2>&1
+```
 
