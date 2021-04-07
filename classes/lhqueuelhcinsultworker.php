@@ -114,12 +114,14 @@ class erLhcoreClassLhcinsultWorker {
 
             // Store flag that chat was terminated
             $insult->terminated = 1;
+
+            // Store chat variables and disable survey
         }
 
         $insult->ctime = time();
         $insult->saveThis();
 
-        $msg->meta_msg = json_encode([
+        $metaMessage = [
             'content' => [
                 'text_conditional' => [
                     'intro_us' => $msgText,
@@ -130,7 +132,8 @@ class erLhcoreClassLhcinsultWorker {
                     'readmore_op' => 'See a message',
                 ]
             ]
-        ]);
+        ];
+        $msg->meta_msg = json_encode($metaMessage);
         $msg->msg = '';
         $msg->saveThis();
 
@@ -141,6 +144,26 @@ class erLhcoreClassLhcinsultWorker {
 
         $chat = erLhcoreClassModelChat::fetchAndLock($msg->chat_id, false);
 
+        $updateFields = ['operation','operation_admin'];
+
+        // Disable survey if chat is terminated
+        if ($insult->terminated == 1) {
+            $chatVariables = $chat->chat_variables_array;
+            $chatVariables['lhc_ds'] = 0;
+            $chat->chat_variables_array = $chatVariables;
+            $chat->chat_variables = json_encode($chat->chat_variables_array);
+            $updateFields[] = 'chat_variables';
+
+            // Update live attribute
+            $metaMessage['content']['execute_js'] = array(
+                "chat_emit" => "attr_rem",
+                "ext_args" => json_encode(['attr' => ['chat_ui','survey_id']], JSON_HEX_APOS), // Path of the attribute
+            );
+
+            $msg->meta_msg = json_encode($metaMessage);
+            $msg->updateThis(['update' => ['meta_msg']]);
+        }
+
         $chat->operation_admin .= "lhinst.updateMessageRowAdmin({$msg->chat_id},{$msg->id});";
 
         // Update main chat interface if chat is closed.
@@ -150,7 +173,7 @@ class erLhcoreClassLhcinsultWorker {
 
         $chat->operation .= "lhinst.updateMessageRow({$msg->id});";
 
-        $chat->updateThis(['update' => ['operation','operation_admin']]);
+        $chat->updateThis(['update' => $updateFields]);
 
         $db->commit();
 
