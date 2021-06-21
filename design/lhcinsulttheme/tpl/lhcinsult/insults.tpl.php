@@ -1,6 +1,6 @@
 <h1><?php echo erTranslationClassLhTranslation::getInstance()->getTranslation('module/lhcinsult','Insults');?></h1>
 
-<form class="mb-2" action="<?php echo erLhcoreClassDesign::baseurl('lhcinsult/insults')?>" >
+<form class="mb-2" action="<?php echo erLhcoreClassDesign::baseurl('lhcinsult/insults')?>" ng-non-bindable>
     <div class="row">
         <div class="col-md-12">
             <div class="row">
