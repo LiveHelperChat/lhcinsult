@@ -121,8 +121,8 @@ class erLhcoreClassLhcinsultWorker {
         $insult->ctime = time();
         $insult->saveThis();
 
-        $metaMessage = [
-            'content' => [
+        $metaMessage = $msg->meta_msg_array;
+        $metaMessage['content'] = [
                 'text_conditional' => [
                     'intro_us' => $msgText,
                     'full_us' => '',
@@ -131,9 +131,10 @@ class erLhcoreClassLhcinsultWorker {
                     'full_op' => $msg->msg . ' [button_action=not_insult]Not offensive[/button_action]',
                     'readmore_op' => 'See a message',
                 ]
-            ]
-        ];
+            ];
+
         $msg->meta_msg = json_encode($metaMessage);
+        $msg->meta_msg_array = $metaMessage;
         $msg->msg = '';
         $msg->saveThis();
 
