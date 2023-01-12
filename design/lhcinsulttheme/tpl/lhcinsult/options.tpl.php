@@ -9,8 +9,8 @@
     <?php endif; ?>
 
     <ul class="nav nav-tabs mb-3" role="tablist">
-        <li role="presentation" class="nav-item"><a href="#messages" class="nav-link<?php if ($tab == '') : ?> active<?php endif;?>" aria-controls="messages" role="tab" data-toggle="tab"><?php echo erTranslationClassLhTranslation::getInstance()->getTranslation('module/cbscheduler','Messages');?></a></li>
-        <li role="presentation" class="nav-item"><a href="#images" class="nav-link<?php if ($tab == 'images') : ?> active<?php endif;?>" aria-controls="images" role="tab" data-toggle="tab"><?php echo erTranslationClassLhTranslation::getInstance()->getTranslation('module/cbscheduler','Images');?></a></li>
+        <li role="presentation" class="nav-item"><a href="#messages" class="nav-link<?php if ($tab == '') : ?> active<?php endif;?>" aria-controls="messages" role="tab" data-bs-toggle="tab"><?php echo erTranslationClassLhTranslation::getInstance()->getTranslation('module/cbscheduler','Messages');?></a></li>
+        <li role="presentation" class="nav-item"><a href="#images" class="nav-link<?php if ($tab == 'images') : ?> active<?php endif;?>" aria-controls="images" role="tab" data-bs-toggle="tab"><?php echo erTranslationClassLhTranslation::getInstance()->getTranslation('module/cbscheduler','Images');?></a></li>
     </ul>
 
     <div class="tab-content">
