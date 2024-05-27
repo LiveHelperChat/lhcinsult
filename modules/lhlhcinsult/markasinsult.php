@@ -14,7 +14,7 @@ try {
             throw new Exception("You can't mark non user message as insulting!");
         }
 
-        erLhcoreClassLhcinsultWorker::markAsInsult($msg);
+        erLhcoreClassLhcinsultWorker::markAsInsult($msg, ['op' => $currentUser->getUserData()]);
 
         echo json_encode($array);
     }

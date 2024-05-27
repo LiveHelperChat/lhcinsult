@@ -77,7 +77,7 @@ class erLhcoreClassLhcinsultWorker {
         }
     }
 
-    public static function markAsInsult($msg) {
+    public static function markAsInsult($msg, $paramsExecution = []) {
 
         $db = ezcDbInstance::get();
         $db->reconnect();
@@ -121,6 +121,11 @@ class erLhcoreClassLhcinsultWorker {
         $insult->ctime = time();
         $insult->saveThis();
 
+        $whoMarked = '';
+        if (isset($paramsExecution['op']) && is_object($paramsExecution['op'])) {
+            $whoMarked = $paramsExecution['op']->name_official . ' [' . $paramsExecution['op']->id . '] marked as insult.';
+        }
+
         $metaMessage = $msg->meta_msg_array;
         $metaMessage['content'] = [
                 'text_conditional' => [
@@ -129,7 +134,7 @@ class erLhcoreClassLhcinsultWorker {
                     'readmore_us' => '',
                     'intro_op' => 'This message is insulting.' . $appendOpMessage,
                     'full_op' => $msg->msg . ' [button_action=not_insult]Not offensive[/button_action]',
-                    'readmore_op' => 'See a message',
+                    'readmore_op' => trim('See a message. '. $whoMarked),
                 ]
             ];
 
