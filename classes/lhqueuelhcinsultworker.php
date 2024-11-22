@@ -4,6 +4,7 @@
  * Example of worker usage
  * 
  * */
+#[\AllowDynamicProperties]
 class erLhcoreClassLhcinsultWorker {
      
     public function perform()
