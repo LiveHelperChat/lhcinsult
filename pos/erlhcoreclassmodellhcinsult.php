@@ -19,6 +19,11 @@ $def->properties['msg']->columnName   = 'msg';
 $def->properties['msg']->propertyName = 'msg';
 $def->properties['msg']->propertyType = ezcPersistentObjectProperty::PHP_TYPE_STRING;
 
+$def->properties['api_output'] = new ezcPersistentObjectProperty();
+$def->properties['api_output']->columnName   = 'api_output';
+$def->properties['api_output']->propertyName = 'api_output';
+$def->properties['api_output']->propertyType = ezcPersistentObjectProperty::PHP_TYPE_STRING;
+
 $def->properties['msg_id'] = new ezcPersistentObjectProperty();
 $def->properties['msg_id']->columnName   = 'msg_id';
 $def->properties['msg_id']->propertyName = 'msg_id';

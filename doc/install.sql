@@ -2,6 +2,7 @@ CREATE TABLE `lhc_insult` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `msg_id` bigint(20) NOT NULL,
   `msg` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `api_output` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `chat_id` bigint(20) NOT NULL,
   `not_insult` tinyint(1) NOT NULL DEFAULT 0,
   `terminated` tinyint(1) NOT NULL DEFAULT 0,

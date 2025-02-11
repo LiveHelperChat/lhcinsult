@@ -74,7 +74,7 @@ class erLhcoreClassLhcinsultWorker {
         }
 
         if ($insultData['insult'] == true) {
-            self::markAsInsult($msg);
+            self::markAsInsult($msg, ['insult_data' => $insultData]);
         }
     }
 
@@ -100,6 +100,10 @@ class erLhcoreClassLhcinsultWorker {
         $insult->chat_id = $msg->chat_id;
         $insult->msg = $msg->msg;
         $insult->msg_id = $msg->id;
+
+        if (isset($paramsExecution['insult_data']['output'])) {
+            $insult->api_output = $paramsExecution['insult_data']['output'];
+        }
 
         $closeChat = false;
         $appendOpMessage = '';
@@ -247,7 +251,7 @@ class erLhcoreClassLhcinsultWorker {
 
                     foreach ($contentJSON as $key => $value) {
                         if (isset($optionsInsult[$key]) && $value > $optionsInsult[$key]) {
-                            return ['insult' => true, 'error' => false];
+                            return ['insult' => true, 'error' => false, 'output' => $content];
                         }
                     }
 
@@ -333,7 +337,7 @@ class erLhcoreClassLhcinsultWorker {
 
                 if ($responseAttr['found'] === true) {
                     if ($responseAttr['value'] == 'Insult') {
-                        return ['insult' => true, 'error' => false];
+                        return ['insult' => true, 'error' => false, 'output' => $content];
                     }
                 } else {
                     erLhcoreClassLog::write(

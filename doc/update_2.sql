@@ -1,0 +1,1 @@
+ALTER TABLE `lhc_insult` ADD `api_output` text NOT NULL, COMMENT='';

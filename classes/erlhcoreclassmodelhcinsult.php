@@ -18,6 +18,7 @@ class erLhcoreClassModelLhcinsult
             'id' => $this->id,
         	'chat_id' => $this->chat_id,
         	'msg' => $this->msg,
+        	'api_output' => $this->api_output,
         	'msg_id' => $this->msg_id,
         	'not_insult' => $this->not_insult,
         	'terminated' => $this->terminated,
@@ -67,6 +68,7 @@ class erLhcoreClassModelLhcinsult
     public $msg_id = null;
 
     public $not_insult = 0;
+    public $api_output = '';
 
     public $terminated = 0;
 

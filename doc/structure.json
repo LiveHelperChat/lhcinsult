@@ -1,0 +1,29 @@
+{
+  "tables": {
+    "lhc_insult": [
+      {
+        "field": "id",
+        "type": "bigint(20)",
+        "null": "NO",
+        "key": "PRI",
+        "default": null,
+        "extra": "auto_increment"
+      },
+      {
+        "field": "api_output",
+        "type": "text",
+        "null": "NO",
+        "key": "",
+        "default": null,
+        "extra": "",
+        "collation": "utf8mb4_unicode_ci"
+      }
+    ]
+  },
+  "tables_data": {    },
+  "tables_data_identifier": {    },
+  "tables_indexes" : {    },
+  "tables_create": {
+    "lhc_insult" : "CREATE TABLE `lhc_insult` (\n  `id` bigint(20) NOT NULL AUTO_INCREMENT,\n  `msg_id` bigint(20) NOT NULL,\n  `msg` text COLLATE utf8mb4_unicode_ci NOT NULL,\n  `api_output` text COLLATE utf8mb4_unicode_ci NOT NULL,\n  `chat_id` bigint(20) NOT NULL,\n  `not_insult` tinyint(1) NOT NULL DEFAULT 0,\n  `terminated` tinyint(1) NOT NULL DEFAULT 0,\n  `ctime` bigint(20) NOT NULL,\n  PRIMARY KEY (`id`),\n  KEY `chat_id` (`chat_id`),\n  KEY `msg_id` (`msg_id`),\n  KEY `terminated` (`terminated`),\n  KEY `ctime` (`ctime`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;"
+  }
+}

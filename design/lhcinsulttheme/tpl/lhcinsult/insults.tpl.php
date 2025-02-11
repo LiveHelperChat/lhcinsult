@@ -115,7 +115,7 @@
                     <a class="action-image material-icons" data-title="<?php echo htmlspecialchars($item->chat_nick,ENT_QUOTES);?>" onclick="lhinst.startChatNewWindow('<?php echo $item->chat_id;?>',$(this).attr('data-title'))" title="<?php echo erTranslationClassLhTranslation::getInstance()->getTranslation('chat/pendingchats','Open in a new window');?>">open_in_new</a>
                     <?php echo $item->chat_id?></td>
                 <td>
-                    <textarea rows="1" class="form-control fs11"><?php echo htmlspecialchars($item->msg)?></textarea>
+                    <textarea rows="1" class="form-control fs11"><?php echo htmlspecialchars($item->msg ."\n==========\n" . $item->api_output)?></textarea>
                 </td>
                 <td>
                     <?php if ($item->not_insult == 1) : ?>
