@@ -197,89 +197,180 @@ class erLhcoreClassLhcinsultWorker {
 
     public static function isInsult($message, $options, $chatId = 0, $attempt = 1) {
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $options['host']);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        if (isset($options['provider']) && $options['provider'] == 'detoxify') {
 
-        $headers = array('Accept: application/json');
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $options['host'] . urlencode($message));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 
-        curl_setopt($ch, CURLOPT_POST,1 );
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([$options['query_attr'] => [$message]]));
-        $headers[] = 'Content-Type: application/json';
-        $headers[] = 'Expect:';
+            $headers = array('Accept: application/json');
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            @curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        @curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            $content = curl_exec($ch);
 
-        $content = curl_exec($ch);
+            $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-        if (curl_errno($ch))
-        {
-            if ($attempt == 3) {
-                erLhcoreClassLog::write(
-                    'LHC_INSULT_ERROR: ' . $content . curl_error($ch) . $message ,
-                    ezcLog::SUCCESS_AUDIT,
-                    array(
-                        'source' => 'LHCINSULT',
-                        'category' => 'lhcinsult',
-                        'line' => __LINE__,
-                        'file' => __FILE__,
-                        'object_id' => $chatId
-                    )
-                );
-            }
-
-            return ['insult' => false, 'error' => true, 'output' => 'curl_errno - [' . $httpcode . ']' . $content . curl_error($ch)];
-        }
-
-        if ($httpcode == 200) {
-            $contentJSON = json_decode($content, true);
-
-            $responseAttr = erLhcoreClassGenericBotActionRestapi::extractAttribute($contentJSON,$options['attr_loc']);
-
-            if ($responseAttr['found'] === true) {
-                if ($responseAttr['value'] == 'Insult') {
-                    return ['insult' => true, 'error' => false];
+            if (curl_errno($ch))
+            {
+                if ($attempt == 3) {
+                    erLhcoreClassLog::write(
+                        'LHC_INSULT_ERROR: ' . $content . curl_error($ch) . $message ,
+                        ezcLog::SUCCESS_AUDIT,
+                        array(
+                            'source' => 'LHCINSULT',
+                            'category' => 'lhcinsult',
+                            'line' => __LINE__,
+                            'file' => __FILE__,
+                            'object_id' => $chatId
+                        )
+                    );
                 }
-            } else {
-                erLhcoreClassLog::write(
-                    'LHC_INSULT_JSON_ERR: ' . $content ,
-                    ezcLog::SUCCESS_AUDIT,
-                    array(
-                        'source' => 'LHCINSULT',
-                        'category' => 'lhcinsult',
-                        'line' => __LINE__,
-                        'file' => __FILE__,
-                        'object_id' => $chatId
-                    )
-                );
-                return ['insult' => false, 'error' => true, 'output' => 'attr not found - [' . $httpcode . ']' . $content . curl_error($ch)];
+
+                return ['insult' => false, 'error' => true, 'output' => 'curl_errno - [' . $httpcode . ']' . $content . curl_error($ch)];
             }
 
-        } else {
-            if ($attempt == 3) {
-                erLhcoreClassLog::write(
-                    'LHC_INSULT_ERROR_HTTP: ' . '[' . $httpcode . ']' .$content . curl_error($ch) ,
-                    ezcLog::SUCCESS_AUDIT,
-                    array(
-                        'source' => 'LHCINSULT',
-                        'category' => 'lhcinsult',
-                        'line' => __LINE__,
-                        'file' => __FILE__,
-                        'object_id' => $chatId
-                    )
-                );
+            if ($httpcode == 200) {
+                $contentJSON = json_decode($content, true);
+
+                if (is_array($contentJSON) && !empty($contentJSON)) {
+
+                    $optionsInsult = isset($options['detoxify']) && !empty($options['detoxify']) ? json_decode($options['detoxify'], true) : [];
+
+                    if (!is_array($optionsInsult) || empty($optionsInsult)) {
+                        $optionsInsult = ["toxicity" => 0.50, "severe_toxicity" => 0.50, "obscene" => 0.50, "threat" => 0.50, "insult" => 0.50, "identity_attack" => 0.50];
+                    }
+
+                    foreach ($contentJSON as $key => $value) {
+                        if (isset($optionsInsult[$key]) && $value > $optionsInsult[$key]) {
+                            return ['insult' => true, 'error' => false];
+                        }
+                    }
+
+                } else {
+                    erLhcoreClassLog::write(
+                        'LHC_INSULT_JSON_ERR: ' . $content ,
+                        ezcLog::SUCCESS_AUDIT,
+                        array(
+                            'source' => 'LHCINSULT',
+                            'category' => 'lhcinsult',
+                            'line' => __LINE__,
+                            'file' => __FILE__,
+                            'object_id' => $chatId
+                        )
+                    );
+                    return ['insult' => false, 'error' => true, 'output' => 'attr not found - [' . $httpcode . ']' . $content . curl_error($ch)];
+                }
+
+            } else {
+                if ($attempt == 3) {
+                    erLhcoreClassLog::write(
+                        'LHC_INSULT_ERROR_HTTP: ' . '[' . $httpcode . ']' .$content . curl_error($ch) ,
+                        ezcLog::SUCCESS_AUDIT,
+                        array(
+                            'source' => 'LHCINSULT',
+                            'category' => 'lhcinsult',
+                            'line' => __LINE__,
+                            'file' => __FILE__,
+                            'object_id' => $chatId
+                        )
+                    );
+                }
+                return ['insult' => false, 'error' => true, 'output' => '[' . $httpcode . ']' .$content . curl_error($ch)];
             }
-            return ['insult' => false, 'error' => true, 'output' => '[' . $httpcode . ']' .$content . curl_error($ch)];
+
+            return ['insult' => false, 'error' => false];
+        } else {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $options['host']);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 15);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+
+            $headers = array('Accept: application/json');
+
+            curl_setopt($ch, CURLOPT_POST,1 );
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([$options['query_attr'] => [$message]]));
+            $headers[] = 'Content-Type: application/json';
+            $headers[] = 'Expect:';
+
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            @curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+
+            $content = curl_exec($ch);
+
+            $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+            if (curl_errno($ch))
+            {
+                if ($attempt == 3) {
+                    erLhcoreClassLog::write(
+                        'LHC_INSULT_ERROR: ' . $content . curl_error($ch) . $message ,
+                        ezcLog::SUCCESS_AUDIT,
+                        array(
+                            'source' => 'LHCINSULT',
+                            'category' => 'lhcinsult',
+                            'line' => __LINE__,
+                            'file' => __FILE__,
+                            'object_id' => $chatId
+                        )
+                    );
+                }
+
+                return ['insult' => false, 'error' => true, 'output' => 'curl_errno - [' . $httpcode . ']' . $content . curl_error($ch)];
+            }
+
+            if ($httpcode == 200) {
+                $contentJSON = json_decode($content, true);
+
+                $responseAttr = erLhcoreClassGenericBotActionRestapi::extractAttribute($contentJSON,$options['attr_loc']);
+
+                if ($responseAttr['found'] === true) {
+                    if ($responseAttr['value'] == 'Insult') {
+                        return ['insult' => true, 'error' => false];
+                    }
+                } else {
+                    erLhcoreClassLog::write(
+                        'LHC_INSULT_JSON_ERR: ' . $content ,
+                        ezcLog::SUCCESS_AUDIT,
+                        array(
+                            'source' => 'LHCINSULT',
+                            'category' => 'lhcinsult',
+                            'line' => __LINE__,
+                            'file' => __FILE__,
+                            'object_id' => $chatId
+                        )
+                    );
+                    return ['insult' => false, 'error' => true, 'output' => 'attr not found - [' . $httpcode . ']' . $content . curl_error($ch)];
+                }
+
+            } else {
+                if ($attempt == 3) {
+                    erLhcoreClassLog::write(
+                        'LHC_INSULT_ERROR_HTTP: ' . '[' . $httpcode . ']' .$content . curl_error($ch) ,
+                        ezcLog::SUCCESS_AUDIT,
+                        array(
+                            'source' => 'LHCINSULT',
+                            'category' => 'lhcinsult',
+                            'line' => __LINE__,
+                            'file' => __FILE__,
+                            'object_id' => $chatId
+                        )
+                    );
+                }
+                return ['insult' => false, 'error' => true, 'output' => '[' . $httpcode . ']' .$content . curl_error($ch)];
+            }
+
+            return ['insult' => false, 'error' => false];
         }
 
-        return ['insult' => false, 'error' => false];
+
     }
 
     public static function isNudity($params, $host) {

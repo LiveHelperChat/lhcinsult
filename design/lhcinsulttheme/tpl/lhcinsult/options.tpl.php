@@ -32,7 +32,29 @@
             <div class="form-group">
                 <label>Host</label>
                 <input type="text" class="form-control form-control-sm" name="host" value="<?php isset($lhci_options['host']) ? print htmlspecialchars($lhci_options['host']) : print 'http://localhost:5000/model'?>" />
+                <p class="text-muted">E.g</p>
+                <ul class="text-muted">
+                    <li>http://127.0.0.1:8080/model</li>
+                    <li>http://127.0.0.1:8080?model=original-small&text=</li>
+                </ul>
+                <p class="text-muted">Supported models out-of-the-box - multilingual, original-small, original</p>
+           </div>
+
+            <div class="form-group">
+                <label>Provider</label>
+                <select name="provider" class="form-control form-control-sm">
+                    <option value="deeppavlov" <?php if (isset($lhci_options['provider']) && $lhci_options['provider'] == 'deeppavlov' || !isset($lhci_options['provider'])): ?>selected="selected"<?php endif;?> >DeepPavlov</option>
+                    <option value="detoxify" <?php if (isset($lhci_options['provider']) && $lhci_options['provider'] == 'detoxify'): ?>selected="selected"<?php endif;?>>Detoxify</option>
+                </select>
             </div>
+
+            <div class="form-group">
+                <label>Detoxify conditions</label>
+                <input type="text" name="detoxify"placeholder='{"toxicity": 0.50, "severe_toxicity": 0.50, "obscene": 0.50, "threat": 0.50, "insult": 0.50, "identity_attack": 0.50}' class="form-control form-control-sm" value="<?php isset($lhci_options['detoxify']) && !empty($lhci_options['detoxify']) ? print htmlspecialchars($lhci_options['detoxify']) : print htmlspecialchars('{"toxicity": 0.50, "severe_toxicity": 0.50, "obscene": 0.50, "threat": 0.50, "insult": 0.50, "identity_attack": 0.50}')?>" />
+                <p class="text-muted">It has to be a valid JSON. Each number indicates how big score has to be for message being considered as insulting.</p>
+            </div>
+
+            <hr/>
 
             <div class="form-group">
                 <label>Declare rules for messages matching which is considered not an insults.</label>

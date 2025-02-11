@@ -33,6 +33,12 @@ if ( isset($_POST['StoreOptions']) ) {
         'host' => new ezcInputFormDefinitionElement(
             ezcInputFormDefinitionElement::OPTIONAL, 'string'
         ),
+        'provider' => new ezcInputFormDefinitionElement(
+            ezcInputFormDefinitionElement::OPTIONAL, 'string'
+        ),
+        'detoxify' => new ezcInputFormDefinitionElement(
+            ezcInputFormDefinitionElement::OPTIONAL, 'unsafe_raw'
+        ),
         'host_img' => new ezcInputFormDefinitionElement(
             ezcInputFormDefinitionElement::OPTIONAL, 'string'
         ),
@@ -63,6 +69,17 @@ if ( isset($_POST['StoreOptions']) ) {
         $data['query_attr'] = $form->query_attr;
     } else {
         $data['query_attr'] = 'x';
+    }
+    if ($form->hasValidData( 'detoxify' )) {
+        $data['detoxify'] = $form->detoxify;
+    } else {
+        $data['detoxify'] = '';
+    }
+    
+    if ($form->hasValidData( 'provider' )) {
+        $data['provider'] = $form->provider;
+    } else {
+        $data['provider'] = '';
     }
 
     if ($form->hasValidData( 'safe_comb' )) {

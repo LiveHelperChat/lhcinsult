@@ -16,8 +16,14 @@ If we detect nude images we remove file instantly and replace a visitor uploaded
 
 This extension requires
 * PHP Resque extension running. https://github.com/LiveHelperChat/lhc-php-resque
-* Deep pavlov API running or just `docker-compose`
+* Deep pavlov API running or just `cd doc/docker/docker-compose` or just for detoxify
+```
+ docker run --pull always --rm --name lhc-detoxify \
+  -p 8080:80 \
+  remdex/lhc-detoxify:latest
+```
 * Live Helper Chat 3.39v just checkout from master branch.
+
 
 # Install guide
 
