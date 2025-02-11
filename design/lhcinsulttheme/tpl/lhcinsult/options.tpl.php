@@ -35,9 +35,8 @@
                 <p class="text-muted">E.g</p>
                 <ul class="text-muted">
                     <li>http://127.0.0.1:8080/model</li>
-                    <li>http://127.0.0.1:8080?model=original-small&text=</li>
+                    <li>http://127.0.0.1:8080?text=</li>
                 </ul>
-                <p class="text-muted">Supported models out-of-the-box - multilingual, original-small, original</p>
            </div>
 
             <div class="form-group">
