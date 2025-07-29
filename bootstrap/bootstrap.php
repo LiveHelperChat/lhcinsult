@@ -36,7 +36,7 @@ class erLhcoreClassExtensionLhcinsult
     public function messageReceived($params)
     {
         if (class_exists('erLhcoreClassExtensionLhcphpresque') && $params['chat']->status !== erLhcoreClassModelChat::STATUS_BOT_CHAT && $params['msg']->msg != '') {
-            if (!isset($params['file'])) {
+            if (!isset($params['file']) && (!isset($params['files']) || empty($params['files']))) {
                 erLhcoreClassModule::getExtensionInstance('erLhcoreClassExtensionLhcphpresque')->enqueue('lhc_insult', 'erLhcoreClassLhcinsultWorker', array('id' => $params['msg']->id));
             } else {
                 $lhcinsultOptions = erLhcoreClassModelChatConfig::fetch('lhcinsult_options');
