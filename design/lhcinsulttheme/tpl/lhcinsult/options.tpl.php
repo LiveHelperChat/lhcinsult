@@ -1,6 +1,6 @@
 <h1 class="attr-header"><?php echo erTranslationClassLhTranslation::getInstance()->getTranslation('module/cbscheduler','Insult detection');?></h1>
 
-<form action="" method="post" ng-non-bindable>
+<form action="" method="post" ng-non-bindable enctype="multipart/form-data">
 
     <?php include(erLhcoreClassDesign::designtpl('lhkernel/csfr_token.tpl.php'));?>
 
@@ -74,6 +74,13 @@
                 <input type="text" class="form-control form-control-sm" name="host_img" value="<?php isset($lhci_options['host_img']) ? print htmlspecialchars($lhci_options['host_img']) : print 'http://localhost:8080/sync'?>" />
             </div>
 
+            <?php if (!empty($validation_output)) : ?>
+                <pre><?php echo htmlspecialchars(json_encode($validation_output,JSON_PRETTY_PRINT));?></pre>
+            <?php endif; ?>
+
+            <input type="file" name="UserPhoto" />
+            <button type="submit" class="btn btn-sm btn-secondary" name="testImage">Test image</button>
+
         </div>
     </div>
 
@@ -104,7 +111,6 @@
 
     <input type="submit" class="btn btn-secondary" name="StoreOptions" value="<?php echo erTranslationClassLhTranslation::getInstance()->getTranslation('system/buttons','Save'); ?>" />
 
-
-
-
 </form>
+
+

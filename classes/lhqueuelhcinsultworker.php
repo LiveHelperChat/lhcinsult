@@ -459,9 +459,9 @@ class erLhcoreClassLhcinsultWorker {
             $contentJSON = json_decode($content, true);
             if (isset($contentJSON['prediction'][$fileName]) && isset($contentJSON['success']) && $contentJSON['success'] == true) {
                 if ($contentJSON['prediction'][$fileName]['safe'] < 0.80) {
-                    return ['scanned' => true, 'valid' => false];
+                    return ['scanned' => true, 'valid' => false, 'details' => $contentJSON['prediction'][$fileName]];
                 } else {
-                    return ['scanned' => true, 'valid' => true];
+                    return ['scanned' => true, 'valid' => true, 'details' => $contentJSON['prediction'][$fileName]];
                 }
             }
         }

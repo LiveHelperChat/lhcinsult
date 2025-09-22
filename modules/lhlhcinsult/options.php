@@ -6,6 +6,37 @@ $lhciOptions = erLhcoreClassModelChatConfig::fetch('lhcinsult_options');
 
 $data = (array)$lhciOptions->data;
 
+if ( isset($_POST['testImage']) ) {
+    $Errors = [];
+    if ( isset($_FILES["UserPhoto"]) && is_uploaded_file($_FILES["UserPhoto"]["tmp_name"]) && $_FILES["UserPhoto"]["error"] == 0 && erLhcoreClassImageConverter::isPhoto('UserPhoto') ) {
+        $Errors = array();
+        $dir = 'var/tmpfiles/';
+        $file = qqFileUploader::upload($_FILES,'UserPhoto',$dir);
+        try {
+            if ( !empty($file["errors"]) ) {
+                foreach ($file["errors"] as $err) {
+                    $Errors[] = $err;
+                }
+            } else {
+                $lhcinsultOptions = erLhcoreClassModelChatConfig::fetch('lhcinsult_options');
+                $response = erLhcoreClassLhcinsultWorker::isNudeRestAPI($file["data"]["filename"],  $file["data"]["dir"] . '/' . $file["data"]["filename"] , -1, $data['host_img'], 1);
+                $tpl->set('validation_output', $response);
+            }
+        } catch (Exception $e) {
+            $Errors[] = $e->getMessage();
+        } finally {
+            if (file_exists($file["data"]["dir"] . '/' . $file["data"]["filename"])) {
+                unlink( $file["data"]["dir"] . '/' . $file["data"]["filename"]);
+            }
+        }
+    } else {
+        $Errors = ['File not uploaded.'];
+    }
+    if (!empty($Errors)) {
+        $tpl->set('validation_output', $Errors);
+    }
+}
+
 if ( isset($_POST['StoreOptions']) ) {
 
     $definition = array(
