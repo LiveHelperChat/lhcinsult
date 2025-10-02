@@ -6,6 +6,21 @@ $lhciOptions = erLhcoreClassModelChatConfig::fetch('lhcinsult_options');
 
 $data = (array)$lhciOptions->data;
 
+if ( isset($_POST['testTextAction']) ) {
+    $lhcinsultOptions = erLhcoreClassModelChatConfig::fetch('lhcinsult_options');
+    try {
+        $response = erLhcoreClassLhcinsultWorker::isInsult($_POST['testText'], $lhcinsultOptions->data);
+        $tpl->set('validation_output', $response);
+    } catch (Exception $e) {
+        $Errors[] = $e->getMessage();
+    }
+
+    if (!empty($Errors)) {
+        $tpl->set('validation_output', $Errors);
+    }
+}
+
+
 if ( isset($_POST['testImage']) ) {
     $Errors = [];
     if ( isset($_FILES["UserPhoto"]) && is_uploaded_file($_FILES["UserPhoto"]["tmp_name"]) && $_FILES["UserPhoto"]["error"] == 0 && erLhcoreClassImageConverter::isPhoto('UserPhoto') ) {

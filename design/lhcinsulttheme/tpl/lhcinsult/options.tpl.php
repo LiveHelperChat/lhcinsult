@@ -60,6 +60,18 @@
                 <textarea name="safe_comb" rows="5" placeholder="delete,close && my && account [params max_words=5]&#10;new rule in new line" class="form-control form-control-sm"><?php isset($lhci_options['safe_comb']) ? print htmlspecialchars($lhci_options['safe_comb']) : ''?></textarea>
             </div>
 
+            <div class="form-group">
+                <label>Test text</label>
+                <textarea name="testText" class="form-control" rows="2"></textarea>
+            </div>
+
+            <?php if (!empty($validation_output)) : ?>
+                <pre><?php echo htmlspecialchars(json_encode($validation_output,JSON_PRETTY_PRINT));?></pre>
+            <?php endif; ?>
+
+            <button type="submit" class="btn btn-sm btn-secondary" name="testTextAction">Test text</button>
+
+
         </div>
         <div role="tabpanel" class="tab-pane <?php if ($tab == 'images') : ?>active<?php endif;?>" id="images">
 
